@@ -1,39 +1,26 @@
 // Liest die SdM-Excel + Medien aus raw/, validiert alles und schreibt
-// AES-GCM-verschlüsselte Dateien nach public/ (nur die landen im Repo).
+// AES-GCM-verschlüsselte Dateien nach public/ (Dashboard) und vault/
+// (verschlüsselte Originale, damit `npm run restore` raw/ auf jedem PC
+// wiederherstellen kann). Nur verschlüsselte Dateien landen im Repo.
 //
 //   npm run data
 //
 // Konfiguration über .env: SDM_PASSWORD (Pflicht), SDM_XLSX (optional)
-import { createHash, pbkdf2Sync, randomBytes, createCipheriv } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import ExcelJS from 'exceljs'
+import { ROOT, VAULT_DIR, deriveKey, encrypt as encryptWith, fail, loadEnv, metaJson, shortHash } from './common.mjs'
 
-const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 const OUT_DATA = join(ROOT, 'public/data')
 const OUT_MEDIA = join(ROOT, 'public/media')
-const MEDIA_DIR = join(ROOT, 'raw/media')
-const ITERATIONS = 600_000
+const RAW_DIR = join(ROOT, 'raw')
+const MEDIA_DIR = join(RAW_DIR, 'media')
 
-// ---------- env ----------
-function loadEnv() {
-  const file = join(ROOT, '.env')
-  if (!existsSync(file)) return
-  for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/)
-    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2]
-  }
-}
 loadEnv()
 const PASSWORD = process.env.SDM_PASSWORD
-if (!PASSWORD) fail('SDM_PASSWORD fehlt (in .env eintragen).')
+if (!PASSWORD) fail('SDM_PASSWORD fehlt (in .env eintragen) – auf einem neuen PC: npm run restore')
 const XLSX = join(ROOT, process.env.SDM_XLSX || 'raw/Alle SdM Spiele.xlsx')
-if (!existsSync(XLSX)) fail(`Excel nicht gefunden: ${XLSX}`)
-
-function fail(msg) {
-  console.error(`\n✖ ${msg}\n`)
-  process.exit(1)
-}
+if (!existsSync(XLSX)) fail(`Excel nicht gefunden: ${XLSX}\n  Auf einem neuen PC zuerst: npm run restore`)
 
 // ---------- helpers ----------
 const ROMAN = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12, XIII: 13, XIV: 14, XV: 15 }
@@ -139,7 +126,10 @@ ws.eachRow((row) => {
   if (typeof nr !== 'number' || nr < 1 || nr > 20) return
 
   const nameCell = cellText(row.getCell('C'))
+  // Zähler der in der Show ausgepackten Spiele ("8 Ausgepackt", "9", "10, …") sind keine Notizen
   const note = txt(row, 'K')
+    .replace(/^\d+(\s*ausgepackt)?(\s*[,;:]\s*|\s*$)/i, '')
+    .replace(/^./, (c) => c.toUpperCase())
   const mb = note.match(/^(\d+)\.\s*Matchball/i)
   const mbDe = txt(row, 'M')
   const mbDa = txt(row, 'O')
@@ -210,26 +200,16 @@ for (const show of shows) {
 // ---------- media ----------
 const MEDIA_EXT = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif', '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime' }
 
-// ---------- crypto ----------
-const salt = (() => {
-  // Salt stabil halten, solange das Passwort gleich bleibt → keine unnötigen Diffs
-  const metaFile = join(OUT_DATA, 'meta.json')
-  if (existsSync(metaFile)) {
-    const meta = JSON.parse(readFileSync(metaFile, 'utf8'))
-    const key = pbkdf2Sync(PASSWORD, Buffer.from(meta.salt, 'base64'), meta.iterations, 32, 'sha256')
-    if (createHash('sha256').update(key).digest('base64') === meta.check) return Buffer.from(meta.salt, 'base64')
-  }
-  return randomBytes(16)
-})()
-const key = pbkdf2Sync(PASSWORD, salt, ITERATIONS, 32, 'sha256')
-
-/** Deterministischer IV (aus Inhalt abgeleitet) → identische Eingabe = identische Datei. */
-function encrypt(buf) {
-  const iv = createHash('sha256').update(key).update(buf).digest().subarray(0, 12)
-  const cipher = createCipheriv('aes-256-gcm', key, iv)
-  const enc = Buffer.concat([cipher.update(buf), cipher.final(), cipher.getAuthTag()])
-  return Buffer.concat([iv, enc])
+// ---------- fatal checks before writing anything ----------
+if (warnings.some((w) => /passt nicht|Endstand|fehlt/.test(w))) {
+  for (const w of warnings) console.warn(`  - ${w}`)
+  fail('Daten-Validierung fehlgeschlagen – nichts geschrieben.')
 }
+
+// ---------- crypto ----------
+const { key, salt, changed } = deriveKey(PASSWORD, { allowNew: true })
+if (changed && existsSync(join(OUT_DATA, 'meta.json'))) console.log('ℹ Neues Passwort erkannt – alles wird neu verschlüsselt.')
+const encrypt = (buf) => encryptWith(key, buf)
 
 mkdirSync(OUT_DATA, { recursive: true })
 mkdirSync(OUT_MEDIA, { recursive: true })
@@ -259,10 +239,10 @@ if (existsSync(MEDIA_DIR)) {
       }
       const buf = readFileSync(join(MEDIA_DIR, dir.name, f))
       const enc = encrypt(buf)
-      const id = createHash('sha256').update(enc).digest('hex').slice(0, 20)
+      const id = shortHash(enc)
       wanted.add(`${id}.bin`)
       writeFileSync(join(OUT_MEDIA, `${id}.bin`), enc)
-      ;(target.media ??= []).push({ id, type, size: buf.length, caption: fm[3]?.replace(/[-_]/g, ' ') ?? null })
+      ;(target.media ??= []).push({ id, file: f, type, size: buf.length, caption: fm[3]?.replace(/[-_]/g, ' ') ?? null })
       mediaCount.files++
       mediaCount.bytes += buf.length
       if (buf.length > 50 * 1024 * 1024) warnings.push(`${dir.name}/${f} ist ${(buf.length / 1048576).toFixed(0)} MB – bitte komprimieren (GitHub-Limit 100 MB)`)
@@ -275,10 +255,22 @@ for (const f of readdirSync(OUT_MEDIA)) if (f.endsWith('.bin') && !wanted.has(f)
 // ---------- write ----------
 const data = { generated: new Date().toISOString().slice(0, 10), players: { dennis: 'Dennis', daniel: 'Daniel' }, shows }
 writeFileSync(join(OUT_DATA, 'sdm.enc'), encrypt(Buffer.from(JSON.stringify(data))))
-writeFileSync(
-  join(OUT_DATA, 'meta.json'),
-  JSON.stringify({ v: 1, iterations: ITERATIONS, salt: salt.toString('base64'), check: createHash('sha256').update(key).digest('base64') }, null, 2) + '\n',
-)
+writeFileSync(join(OUT_DATA, 'meta.json'), metaJson(key, salt))
+
+// ---------- vault: verschlüsselte Originale aus raw/ (media/ steckt schon in public/media) ----------
+mkdirSync(VAULT_DIR, { recursive: true })
+const vaultFiles = []
+for (const f of readdirSync(RAW_DIR)) {
+  const full = join(RAW_DIR, f)
+  if (!statSync(full).isFile() || f.startsWith('~$')) continue // ~$… = Excel-Sperrdatei
+  const enc = encrypt(readFileSync(full))
+  const id = shortHash(enc)
+  writeFileSync(join(VAULT_DIR, `${id}.enc`), enc)
+  vaultFiles.push({ name: f, id })
+}
+writeFileSync(join(VAULT_DIR, 'index.enc'), encrypt(Buffer.from(JSON.stringify({ files: vaultFiles }))))
+const keepVault = new Set(['index.enc', ...vaultFiles.map((v) => `${v.id}.enc`)])
+for (const f of readdirSync(VAULT_DIR)) if (!keepVault.has(f)) rmSync(join(VAULT_DIR, f))
 
 // ---------- report ----------
 const wins = { dennis: 0, daniel: 0 }
@@ -286,8 +278,8 @@ for (const s of shows) if (s.winner) wins[s.winner]++
 console.log(`\n✔ ${shows.length} Shows, ${globalCounter} Spiele – Shows: Dennis ${wins.dennis} : ${wins.daniel} Daniel`)
 for (const s of shows) console.log(`  ${s.label.padEnd(7)} ${s.dates.join(' + ').padEnd(24)} ${s.final.join(':').padStart(7)}  → ${s.winner}`)
 console.log(`  Medien: ${mediaCount.files} Dateien (${(mediaCount.bytes / 1048576).toFixed(1)} MB)`)
+console.log(`  Tresor: ${vaultFiles.map((v) => v.name).join(', ')}`)
 if (warnings.length) {
   console.warn(`\n⚠ ${warnings.length} Hinweis(e):`)
   for (const w of warnings) console.warn(`  - ${w}`)
-  if (warnings.some((w) => /passt nicht|Endstand|fehlt/.test(w))) fail('Daten-Validierung fehlgeschlagen.')
 }

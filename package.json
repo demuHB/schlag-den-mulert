@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "data": "node scripts/build-data.mjs",
-    "icons": "node scripts/build-icons.mjs"
+    "icons": "node scripts/build-icons.mjs",
+    "restore": "node scripts/restore.mjs"
   },
   "dependencies": {
     "framer-motion": "^14.0.0",

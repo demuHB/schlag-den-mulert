@@ -9,26 +9,24 @@ Vite + React + TypeScript + Tailwind, gehostet auf GitHub Pages.
 Das Repo ist öffentlich, die Inhalte aber nicht:
 
 - Alle Daten (`public/data/sdm.enc`) und Medien (`public/media/*.bin`) liegen nur **AES-256-GCM-verschlüsselt** im Repo. Der Schlüssel wird per PBKDF2 (600.000 Iterationen) aus dem Passwort abgeleitet.
-- Die Originale (`raw/`: Excel, Logo, Screenshots, Clips) und das Passwort (`.env`) sind per `.gitignore` ausgeschlossen. **Bitte lokal sichern**, denn im Repo liegen sie nicht.
+- Die Originale (`raw/`: Excel, Logo, Screenshots, Clips) liegen ebenfalls nur verschlüsselt im Repo (`vault/` bzw. `public/media/`). Mit `npm run restore` lassen sie sich auf jedem PC wiederherstellen. Das Passwort (`.env`) wird nie committet.
 - Im Browser wird einmal das Passwort eingegeben. Danach merkt sich das Gerät den abgeleiteten Schlüssel (`localStorage`), bis man sich abmeldet.
 
-## Lokale Einrichtung
+## Auf einem (neuen) PC einrichten
+
+Voraussetzung: [Node.js](https://nodejs.org) und Git.
 
 ```bash
+git clone https://github.com/DerUserX/schlag-den-mulert.git
+cd schlag-den-mulert
 npm install
+npm run restore   # fragt einmal nach dem Passwort, legt .env an und stellt raw/ wieder her
+npm run dev       # http://localhost:5175
 ```
 
-`.env` im Projektordner anlegen:
+Danach liegen Excel, Logo und alle Medien wieder in `raw/`.
 
-```
-SDM_PASSWORD=dein-passwort
-# optional: SDM_XLSX=raw/Alle SdM Spiele.xlsx
-```
-
-```bash
-npm run data   # Excel + Medien einlesen, prüfen, verschlüsseln → public/
-npm run dev    # http://localhost:5175
-```
+**Arbeiten auf mehreren PCs:** Vor dem Bearbeiten immer `git pull` und `npm run restore` ausführen, danach `npm run data`, committen und pushen. Das Repo ist der Abgleich zwischen den Rechnern. `restore` überschreibt keine lokal geänderten Dateien (außer mit `npm run restore -- --force`).
 
 ## Neue Show / Korrekturen
 
@@ -55,12 +53,13 @@ Tipps:
 
 ## Passwort ändern
 
-`SDM_PASSWORD` in `.env` ändern, dann `npm run data` ausführen, committen und pushen. Alle Geräte müssen sich danach neu anmelden.
+`SDM_PASSWORD` in `.env` ändern, dann `npm run data` ausführen, committen und pushen. Alle Geräte müssen sich danach im Browser neu anmelden, und auf anderen PCs muss das neue Passwort in deren `.env` eingetragen werden.
 
 ## Weitere Befehle
 
 | Befehl | Zweck |
 |---|---|
+| `npm run restore` | `raw/` aus den verschlüsselten Dateien im Repo wiederherstellen |
 | `npm run icons` | Logo/Icons aus `raw/logo.png` neu erzeugen |
 | `npm run build` | Produktions-Build nach `dist/` |
 | `npm run lint` | oxlint |
