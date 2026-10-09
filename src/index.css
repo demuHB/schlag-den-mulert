@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  --bg: #0d0b16;
+  --card: rgb(255 255 255 / 0.045);
+  --card-solid: #171425;
+  --border: rgb(255 255 255 / 0.09);
+  --ink: #f4f1fa;
+  --ink-2: #b7b1c8;
+  --ink-3: #7d778f;
+  --grid: rgb(255 255 255 / 0.07);
+  --dennis: #3591ea;
+  --daniel: #ee5277;
+  --gold: #fbbf24;
+  --gold-2: #f59e0b;
+  --orange: #ea7a1c;
+  --glow-1: rgb(245 158 11 / 0.16);
+  --glow-2: rgb(53 145 234 / 0.10);
+  --glow-3: rgb(238 82 119 / 0.09);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f3ee;
+  --card: rgb(255 255 255 / 0.8);
+  --card-solid: #ffffff;
+  --border: rgb(20 15 40 / 0.1);
+  --ink: #1b1726;
+  --ink-2: #4f4a5e;
+  --ink-3: #7c768b;
+  --grid: rgb(20 15 40 / 0.08);
+  --dennis: #1f6fd1;
+  --daniel: #d6315b;
+  --gold: #d97706;
+  --gold-2: #b45309;
+  --orange: #c2410c;
+  --glow-1: rgb(245 158 11 / 0.18);
+  --glow-2: rgb(31 111 209 / 0.07);
+  --glow-3: rgb(214 49 91 / 0.06);
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Anton", "Impact", "Inter", sans-serif;
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-solid: var(--card-solid);
+  --color-line: var(--border);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-dennis: var(--dennis);
+  --color-daniel: var(--daniel);
+  --color-gold: var(--gold);
+  --color-gold-2: var(--gold-2);
+  --color-orange: var(--orange);
+}
+
+body {
+  @apply bg-bg text-ink font-sans antialiased;
+  background-image:
+    radial-gradient(1100px 520px at 50% -12%, var(--glow-1), transparent 65%),
+    radial-gradient(700px 500px at -10% 30%, var(--glow-2), transparent 60%),
+    radial-gradient(700px 500px at 110% 40%, var(--glow-3), transparent 60%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.card {
+  @apply bg-card border border-line rounded-2xl backdrop-blur-xl;
+}
+
+.chip {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(100deg, #f59e0b, #fde047 45%, #f97316);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.label {
+  @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }

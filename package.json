@@ -1,0 +1,35 @@
+{
+  "name": "schlag-den-mulert",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "data": "node scripts/build-data.mjs",
+    "icons": "node scripts/build-icons.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "^14.0.0",
+    "lucide-react": "^1.54.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.19.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "exceljs": "^4.4.0",
+    "oxlint": "^1.87.0",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.4"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "FIFA": ["^fifa 1[0-9]$"],
+  "Tischtennis": ["^tischtennis"],
+  "Mario Kart": ["^mario kart"],
+  "Trackmania": ["^trackmania"],
+  "Punkteschießen": ["^punkteschießen"],
+  "Angeln": ["^angeln"],
+  "Schnippsen": ["^schnippsen$"],
+  "Darts": ["^darts$"]
+}
