@@ -17,7 +17,7 @@ Das Repo ist öffentlich, die Inhalte aber nicht:
 Voraussetzung: [Node.js](https://nodejs.org) und Git.
 
 ```bash
-git clone https://github.com/DerUserX/schlag-den-mulert.git
+git clone https://github.com/demuHB/schlag-den-mulert.git
 cd schlag-den-mulert
 npm install
 npm run restore   # fragt einmal nach dem Passwort, legt .env an und stellt raw/ wieder her
