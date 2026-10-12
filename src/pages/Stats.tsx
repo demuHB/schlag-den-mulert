@@ -89,27 +89,27 @@ export default function Stats() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Section kicker="Nerven aus Stahl" title="Matchbälle">
-          <div className="card overflow-hidden">
+          <div className="card overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="label text-left">
-                  <th className="p-3 font-semibold">Spieler</th>
-                  <th className="p-3 text-right font-semibold">verwandelt</th>
-                  <th className="p-3 text-right font-semibold">vergeben</th>
-                  <th className="p-3 text-right font-semibold">abgewehrt</th>
+                <tr className="label text-left tracking-normal sm:tracking-[0.14em]">
+                  <th className="px-2 py-3 sm:px-3 font-semibold">Spieler</th>
+                  <th className="px-2 py-3 sm:px-3 text-right font-semibold" title="verwandelt"><span className="sm:hidden">verw.</span><span className="hidden sm:inline">verwandelt</span></th>
+                  <th className="px-2 py-3 sm:px-3 text-right font-semibold" title="vergeben"><span className="sm:hidden">verg.</span><span className="hidden sm:inline">vergeben</span></th>
+                  <th className="px-2 py-3 sm:px-3 text-right font-semibold" title="abgewehrt"><span className="sm:hidden">abgew.</span><span className="hidden sm:inline">abgewehrt</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {P.map((p) => (
                   <tr key={p}>
-                    <td className="p-3">
+                    <td className="px-2 py-3 sm:px-3">
                       <span className="flex items-center gap-2 font-semibold">
                         <PlayerDot p={p} /> {NAMES[p]}
                       </span>
                     </td>
-                    <td className="p-3 text-right tabular">{mb[p].versenkt}</td>
-                    <td className="p-3 text-right tabular">{mb[p].verpasst}</td>
-                    <td className="p-3 text-right tabular">{mb[p].abgewehrt}</td>
+                    <td className="px-2 py-3 sm:px-3 text-right tabular">{mb[p].versenkt}</td>
+                    <td className="px-2 py-3 sm:px-3 text-right tabular">{mb[p].verpasst}</td>
+                    <td className="px-2 py-3 sm:px-3 text-right tabular">{mb[p].abgewehrt}</td>
                   </tr>
                 ))}
               </tbody>

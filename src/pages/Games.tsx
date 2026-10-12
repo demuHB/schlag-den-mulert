@@ -92,7 +92,7 @@ export default function Games() {
           <button
             key={`${s.number}-${g.nr}`}
             onClick={() => open(s.number, g.nr)}
-            className="card flex items-center gap-3 p-3 text-left transition hover:border-gold/50"
+            className="card flex min-w-0 items-center gap-3 p-3 text-left transition hover:border-gold/50"
           >
             <span
               className="grid h-10 w-10 shrink-0 place-items-center rounded-xl font-display text-lg text-white"

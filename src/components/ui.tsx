@@ -21,7 +21,7 @@ export function PlayerTag({ p, className = '' }: { p: Player | null; className?:
 
 export function Section({ title, kicker, children, right }: { title: string; kicker?: string; children: ReactNode; right?: ReactNode }) {
   return (
-    <section className="mt-10">
+    <section className="mt-10 min-w-0">
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           {kicker && <div className="label mb-1">{kicker}</div>}

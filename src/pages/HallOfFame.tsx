@@ -152,11 +152,11 @@ export default function HallOfFame() {
         <Section kicker="Kurzfristig getauscht" title="Ersetzte Spiele">
           <div className="grid gap-2 sm:grid-cols-2">
             {replaced.map(({ show, game }) => (
-              <button key={`${show.number}-${game.nr}`} onClick={() => open(show.number, game.nr)} className="card flex items-center gap-3 p-3 text-left hover:border-gold/50">
+              <button key={`${show.number}-${game.nr}`} onClick={() => open(show.number, game.nr)} className="card flex min-w-0 items-center gap-3 p-3 text-left hover:border-gold/50">
                 <span className="chip shrink-0 border border-line text-ink-2">
                   {show.label} · {game.nr}
                 </span>
-                <span className="min-w-0 truncate text-sm">
+                <span className="min-w-0 text-sm leading-snug">
                   <s className="text-ink-3">{game.replaced}</s> → <b>{game.name}</b>
                 </span>
               </button>

@@ -168,9 +168,12 @@ export function StackedBars({
                 {ha > 0 && (
                   <rect x={cx - barW / 2} y={base - hd - ha - (hd > 0 ? 2 : 0)} width={barW} height={ha} rx={Math.min(4, ha / 2)} fill="var(--daniel)" />
                 )}
-                <text x={cx} y={height - 6} textAnchor="middle" fontSize="10" fill={hover === i ? 'var(--ink)' : 'var(--ink-3)'}>
-                  {label(i)}
-                </text>
+                {/* bei schmalen Säulen nur jede zweite Beschriftung (plus die gehoverte) */}
+                {(bw >= 18 || i % 2 === 0 || hover === i) && (
+                  <text x={cx} y={height - 6} textAnchor="middle" fontSize="10" fill={hover === i ? 'var(--ink)' : 'var(--ink-3)'}>
+                    {label(i)}
+                  </text>
+                )}
               </g>
             )
           })}

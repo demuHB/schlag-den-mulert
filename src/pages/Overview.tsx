@@ -23,33 +23,41 @@ export default function Overview() {
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="card relative overflow-hidden px-5 py-8 text-center sm:px-10 sm:py-10"
+        className="card relative overflow-hidden px-4 py-6 text-center sm:px-10 sm:py-10"
       >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_220px_at_50%_0%,rgba(251,191,36,0.18),transparent_70%)]" />
-        <img src="./logo.webp" alt="Schlag den Mulert" className="relative mx-auto w-full max-w-[360px] drop-shadow-[0_10px_40px_rgba(245,158,11,0.35)]" />
-        <p className="relative mt-1 font-display text-lg uppercase tracking-wider text-gold-gradient sm:text-xl">Ruhm, Ehre und 10 Euro</p>
+        <img
+          src="./logo.webp"
+          alt="Schlag den Mulert"
+          className="relative mx-auto w-full max-w-[240px] drop-shadow-[0_10px_40px_rgba(245,158,11,0.35)] sm:max-w-[360px]"
+        />
+        <p className="relative mt-1 font-display text-base uppercase tracking-wider text-gold-gradient sm:text-xl">Ruhm, Ehre und 10 Euro</p>
 
-        <div className="relative mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-8">
+        {/* Handy: Stand oben, beide Spieler darunter nebeneinander · ab sm: Spieler | Stand | Spieler */}
+        <div className="relative mt-6 grid grid-cols-2 items-start gap-x-3 gap-y-4 sm:mt-8 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-8">
           {(['dennis', null, 'daniel'] as const).map((p) =>
             p === null ? (
-              <div key="vs" className="text-center">
+              <div key="vs" className="order-first col-span-2 text-center sm:order-none sm:col-span-1">
                 <div className="label">Shows</div>
-                <div className="font-display text-6xl tabular sm:text-8xl">
+                <div className="font-display text-7xl leading-none tabular sm:text-8xl">
                   <span style={{ color: 'var(--dennis)' }}>{t.shows.dennis}</span>
                   <span className="mx-2 text-ink-3">:</span>
                   <span style={{ color: 'var(--daniel)' }}>{t.shows.daniel}</span>
                 </div>
               </div>
             ) : (
-              <div key={p} className={p === 'dennis' ? 'text-right' : 'text-left'}>
-                <div className={`flex items-center gap-2 ${p === 'dennis' ? 'justify-end' : ''}`}>
-                  <PlayerDot p={p} size={12} />
+              <div key={p} className={`min-w-0 ${p === 'dennis' ? 'sm:text-right' : 'sm:text-left'}`}>
+                <div className={`flex items-center justify-center gap-2 ${p === 'dennis' ? 'sm:justify-end' : 'sm:justify-start'}`}>
+                  <PlayerDot p={p} size={10} />
                   <span className="font-display text-2xl uppercase tracking-wide sm:text-4xl">{NAMES[p]}</span>
                 </div>
-                <div className="mt-1 text-xs text-ink-2 sm:text-sm">
-                  {t.games[p]} Spiele · {t.points[p]} Punkte
+                <div className="mt-1 text-xs leading-snug text-ink-2 sm:text-sm">
+                  <span className="whitespace-nowrap">{t.games[p]} Spiele</span>
+                  <span className="hidden sm:inline"> · </span>
+                  <br className="sm:hidden" />
+                  <span className="whitespace-nowrap">{t.points[p]} Punkte</span>
                 </div>
-                {leader === p && <div className="chip mt-2 bg-gold/15 text-gold">👑 Tabellenführer</div>}
+                {leader === p && <div className="chip mt-2 whitespace-nowrap bg-gold/15 text-gold">👑 Tabellenführer</div>}
               </div>
             ),
           )}
